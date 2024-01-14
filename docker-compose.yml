@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    command: uvicorn main:app --host 0.0.0.0 --port ${APP_PORT:-8000} --reload
+    volumes:
+      - .:/usr/src/
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/monitor
+      - APP_PORT=8000
+      - MONITOR_INTERVAL=1
+
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: monitor
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
