@@ -12,7 +12,9 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:password@db:5432/monitor
       - APP_PORT=8000
-      - MONITOR_INTERVAL=1
+      - MONITOR_INTERVAL=3
+    networks:
+      app-network:
 
   db:
     image: postgres:13-alpine
@@ -23,6 +25,11 @@ services:
       POSTGRES_DB: monitor
     ports:
       - "5432:5432"
+    networks:
+      app-network:
 
 volumes:
   postgres_data:
+
+networks:
+  app-network:

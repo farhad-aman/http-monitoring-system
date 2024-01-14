@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "http-monitoring-system.fullname" . }}-app
+  labels:
+    {{- include "http-monitoring-system.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "http-monitoring-system.fullname" . }}-app
+  template:
+    metadata:
+      labels:
+        app: {{ include "http-monitoring-system.fullname" . }}-app
+    spec:
+      containers:
+      - name: http-monitoring-system
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.service.containerPort }}
+        env:
+        - name: MONITOR_INTERVAL
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "http-monitoring-system.fullname" . }}-config
+              key: MONITOR_INTERVAL
+        - name: APP_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "http-monitoring-system.fullname" . }}-config
+              key: APP_PORT
+        - name: DATABASE_MASTER_URL
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "http-monitoring-system.fullname" . }}-config
+              key: DATABASE_MASTER_URL
+        - name: DATABASE_REPLICA_URL
+          valueFrom:
+            configMapKeyRef:
+              name: {{ include "http-monitoring-system.fullname" . }}-config
+              key: DATABASE_REPLICA_URL

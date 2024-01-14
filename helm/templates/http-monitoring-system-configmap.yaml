@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "http-monitoring-system.fullname" . }}-config
+  labels:
+    {{- include "http-monitoring-system.labels" . | nindent 4 }}
+data:
+  MONITOR_INTERVAL: "{{ .Values.env.monitorInterval }}"
+  APP_PORT: "{{ .Values.service.containerPort}}"
+  DATABASE_MASTER_URL: "postgresql://{{ .Values.pg.username }}:{{ .Values.pg.password }}@postgres-master-svc:5432/{{ .Values.pg.database }}"
+  DATABASE_REPLICA_URL: "postgresql://{{ .Values.pg.username }}:{{ .Values.pg.password }}@postgres-replica-svc:5432/{{ .Values.pg.database }}"
+

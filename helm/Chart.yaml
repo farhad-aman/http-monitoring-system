@@ -1,0 +1,4 @@
+apiVersion: v2
+name: http-monitoring-system
+description: A Helm chart for the HTTP monitoring system with PostgreSQL
+version: 0.1.0
