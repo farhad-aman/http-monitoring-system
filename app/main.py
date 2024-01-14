@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from crud import get_server, get_servers, create_server, update_server_status
-from database import SessionLocal, engine
+from database import MasterSessionLocal, ReplicaSessionLocal, master_engine
 from models import Base
 from schemas import ServerCreate, Server
 
@@ -35,7 +35,7 @@ def is_server_healthy(address: str) -> bool:
 
 def monitor():
     logger.info("Monitoring Started!")
-    db: Session = SessionLocal()
+    db: Session = MasterSessionLocal()
     try:
         servers = get_servers(db)
         for server in servers:
@@ -53,17 +53,24 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(monitor, 'interval', minutes=int(os.getenv("MONITOR_INTERVAL", 1)))
 scheduler.start()
 
-Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=master_engine)
 
 app = FastAPI()
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+def get_db(operation='read'):
+    if operation == 'read':
+        db = ReplicaSessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
+    else:
+        db = MasterSessionLocal()
+        try:
+            yield db
+        finally:
+            db.close()
 
 
 @app.post("/api/server/", response_model=Server)
@@ -84,7 +91,7 @@ def read_servers(skip: int = 0, limit: int = 100, db: Session = Depends(get_db))
 
 
 @app.get("/api/server/{server_id}", response_model=Server)
-def read_server(server_id: int, db: Session = Depends(get_db)):
+def read_server(server_id: int, db: Session = Depends(lambda: get_db(operation='write'))):
     logger.info(f"Fetching server with ID: {server_id}")
     db_server = get_server(db, server_id=server_id)
     if db_server is None:
