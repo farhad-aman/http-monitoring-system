@@ -10,7 +10,7 @@ services:
     depends_on:
       - db
     environment:
-      - DATABASE_URL=postgresql://postgres:password@db:5432/monitor
+      - DATABASE_MASTER_URL=postgresql://postgres:password@db:5432/monitor
       - APP_PORT=8000
       - MONITOR_INTERVAL=3
     networks:
