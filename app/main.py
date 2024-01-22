@@ -6,6 +6,7 @@ import httpx
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from apscheduler.schedulers.background import BackgroundScheduler
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from crud import get_server, get_servers, create_server, update_server_status
 from database import MasterSessionLocal, ReplicaSessionLocal, master_engine
@@ -56,25 +57,28 @@ scheduler.start()
 Base.metadata.create_all(bind=master_engine)
 
 app = FastAPI()
+Instrumentator().instrument(app).expose(app)
 
 
-def get_db(operation='read'):
-    if operation == 'read':
-        db = ReplicaSessionLocal()
-        try:
-            yield db
-        finally:
-            db.close()
-    else:
-        db = MasterSessionLocal()
-        try:
-            yield db
-        finally:
-            db.close()
+def db_factory(operation='read'):
+    def get_db():
+        if operation == 'read':
+            db = ReplicaSessionLocal()
+            try:
+                yield db
+            finally:
+                db.close()
+        else:
+            db = MasterSessionLocal()
+            try:
+                yield db
+            finally:
+                db.close()
+    return get_db
 
 
 @app.post("/api/server/", response_model=Server)
-def create_server_api(server: ServerCreate, db: Session = Depends(get_db)):
+def create_server_api(server: ServerCreate, db: Session = Depends(db_factory(operation='write'))):
     logger.info(f"Creating a new server entry: {server}")
     try:
         return create_server(db=db, server=server)
@@ -84,14 +88,14 @@ def create_server_api(server: ServerCreate, db: Session = Depends(get_db)):
 
 
 @app.get("/api/server/all", response_model=list[Server])
-def read_servers(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_servers(skip: int = 0, limit: int = 100, db: Session = Depends(db_factory(operation='read'))):
     logger.info(f"Fetching list of servers: skip {skip}, limit {limit}")
     servers = get_servers(db, skip=skip, limit=limit)
     return servers
 
 
 @app.get("/api/server/{server_id}", response_model=Server)
-def read_server(server_id: int, db: Session = Depends(lambda: get_db(operation='write'))):
+def read_server(server_id: int, db: Session = Depends(db_factory(operation='read'))):
     logger.info(f"Fetching server with ID: {server_id}")
     db_server = get_server(db, server_id=server_id)
     if db_server is None:
