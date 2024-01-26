@@ -14,6 +14,8 @@ from database import MasterSessionLocal, ReplicaSessionLocal, master_engine
 import models
 import schemas
 
+startup_complete = False
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -74,6 +76,9 @@ models.Base.metadata.create_all(bind=master_engine)
 
 app = FastAPI()
 Instrumentator().instrument(app).expose(app)
+
+if startup_complete is False:
+    startup_complete = True
 
 
 def db_factory(operation='read'):
@@ -151,6 +156,14 @@ def readiness_probe():
     except Exception as e:
         logger.error(f"Error connecting to database: {e}")
         return {"status": "not ready"}, 503
+
+
+@app.get("/health/startup")
+def startup_probe():
+    if startup_complete:
+        return {"status": "started"}
+    else:
+        return {"status": "starting"}, 503
 
 
 @app.get("/hello")

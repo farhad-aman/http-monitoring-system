@@ -20,6 +20,24 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
         - containerPort: {{ .Values.service.containerPort }}
+        livenessProbe:
+          httpGet:
+            path: /health/liveness
+            port: {{ .Values.service.port }}
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /health/readiness"
+            port: {{ .Values.service.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 20
+        startupProbe:
+          httpGet:
+            path: /health/startup
+            port: {{ .Values.service.port }}
+          failureThreshold: 30
+          periodSeconds: 10
         env:
         - name: MONITOR_INTERVAL
           valueFrom:

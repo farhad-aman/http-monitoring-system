@@ -13,17 +13,26 @@ service:
 env:
   monitorInterval: 1
 
-resources: {}
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
 pg:
   database: monitor
   username: postgres
   password: password
   image: postgres:13-alpine
 
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitors:
+      - name: "http-monitoring-system"
+        selector:
+          matchLabels:
+            app: "http-monitoring-system"
+        endpoints:
+          - port: "http"
+            interval: "30s"
+
+grafana:
+  enabled: true
+  adminPassword: "admin"
+  service:
+    type: LoadBalancer
