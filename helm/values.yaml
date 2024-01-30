@@ -10,14 +10,23 @@ service:
   port: 8000
   containerPort: 8000
 
+
 env:
   monitorInterval: 1
 
-pg:
-  database: monitor
-  username: postgres
-  password: password
-  image: postgres:13-alpine
+postgresql:
+  architecture: replication
+  replicaCount: 1
+  auth:
+    database: monitor
+    username: postgres
+    password: password
+  image:
+    registry: docker.io
+    repository: bitnami/postgresql
+    tag: "13.0.0-debian-10-r0"
+    pullPolicy: IfNotPresent
+
 
 prometheus:
   prometheusSpec:
@@ -28,8 +37,9 @@ prometheus:
           matchLabels:
             app: "http-monitoring-system"
         endpoints:
-          - port: "http"
+          - port: "8000"
             interval: "30s"
+            path: "/metrics"
 
 grafana:
   enabled: true

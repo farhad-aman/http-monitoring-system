@@ -1,0 +1,13 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: http-monitoring-system-smon
+  labels:
+    app: http-monitoring-system
+spec:
+  selector:
+    matchLabels:
+      app: http-monitoring-system
+  endpoints:
+  - port: "{{ .Values.service.containerPort }}"
+    interval: 10s

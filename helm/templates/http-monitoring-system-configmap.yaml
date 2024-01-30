@@ -7,6 +7,5 @@ metadata:
 data:
   MONITOR_INTERVAL: "{{ .Values.env.monitorInterval }}"
   APP_PORT: "{{ .Values.service.containerPort}}"
-  DATABASE_MASTER_URL: "postgresql://{{ .Values.pg.username }}:{{ .Values.pg.password }}@postgres-primary-svc.default:5432/{{ .Values.pg.database }}"
-  DATABASE_REPLICA_URL: "postgresql://{{ .Values.pg.username }}:{{ .Values.pg.password }}@postgres-replica-svc.default:5432/{{ .Values.pg.database }}"
-
+  DATABASE_MASTER_URL: "postgresql://{{ .Values.postgresql.auth.username }}:{{ .Values.postgresql.auth.password }}@http-monitoring-system-postgresql-primary.default:5432/{{ .Values.postgresql.auth.database }}"
+  DATABASE_REPLICA_URL: "postgresql://{{ .Values.postgresql.auth.username }}:{{ .Values.postgresql.auth.password }}@http-monitoring-system-postgresql-read.default:5432/{{ .Values.postgresql.auth.database }}"

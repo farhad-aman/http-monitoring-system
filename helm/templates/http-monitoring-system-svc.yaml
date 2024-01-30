@@ -3,6 +3,7 @@ kind: Service
 metadata:
   name: {{ .Release.Name }}-svc
   labels:
+    app: http-monitoring-system
     {{- include "http-monitoring-system.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
