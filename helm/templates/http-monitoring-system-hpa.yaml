@@ -2,7 +2,7 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: http-monitoring-system.fullname-hpa
+  name: http-monitoring-system-hpa
   labels:
     {{- include "http-monitoring-system.labels" . | nindent 4 }}
 spec:
@@ -18,7 +18,7 @@ spec:
       resource:
         name: cpu
         target:
-            type: Utilization
-            averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
+          type: Utilization
+          averageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
     {{- end }}
 {{- end }}

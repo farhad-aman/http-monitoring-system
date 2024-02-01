@@ -40,12 +40,11 @@ kube-prometheus-stack:
       serviceMonitorNamespaceSelector: {}
       podMonitorSelector: {}
       podMonitorNamespaceSelector: {}
-
-grafana:
-  enabled: true
-  adminPassword: "admin"
-  service:
-    type: LoadBalancer
+  grafana:
+    enabled: true
+    adminPassword: "admin"
+    service:
+      type: ClusterIP
 
 autoscaling:
   enabled: true
