@@ -28,21 +28,27 @@ postgresql:
     pullPolicy: IfNotPresent
 
 
-prometheus:
-  prometheusSpec:
-    serviceMonitorSelectorNilUsesHelmValues: false
-    serviceMonitors:
-      - name: "http-monitoring-system"
-        selector:
-          matchLabels:
-            app: "http-monitoring-system"
-        endpoints:
-          - port: "8000"
-            interval: "30s"
-            path: "/metrics"
+kube-prometheus-stack:
+  prometheus:
+    prometheusSpec:
+      scrapeConfigs:
+      - job_name: 'http-monitoring-system-metrics'
+        static_configs:
+          - targets: ['http-monitoring-system-svc.default.svc.cluster.local:8000']
+      # Adjust if you're using ServiceMonitors and want to ensure broad discovery
+      serviceMonitorSelector: {}
+      serviceMonitorNamespaceSelector: {}
+      podMonitorSelector: {}
+      podMonitorNamespaceSelector: {}
 
 grafana:
   enabled: true
   adminPassword: "admin"
   service:
     type: LoadBalancer
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 50

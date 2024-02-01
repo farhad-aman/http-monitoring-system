@@ -3,11 +3,11 @@ kind: ServiceMonitor
 metadata:
   name: http-monitoring-system-smon
   labels:
-    app: http-monitoring-system
+    release: http-monitoring-system
 spec:
   selector:
     matchLabels:
       app: http-monitoring-system
   endpoints:
-  - port: "{{ .Values.service.containerPort }}"
+  - port: http
     interval: 10s
