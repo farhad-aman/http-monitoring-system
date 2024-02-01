@@ -10,7 +10,6 @@ service:
   port: 8000
   containerPort: 8000
 
-
 env:
   monitorInterval: 1
 
